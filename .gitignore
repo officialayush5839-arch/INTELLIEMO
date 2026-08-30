@@ -1,0 +1,68 @@
+# Environment
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Node
+node_modules/
+frontend/dist/
+frontend/build/
+
+# Models (large files > 50MB)
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+models/**/*.safetensors
+models/**/*.bin
+backend/models/**/*.safetensors
+backend/models/**/*.bin
+!models/README.md
+!models/.gitkeep
+!models/**/metrics.json
+!models/**/*metrics.json
+
+# Database
+*.db*
+*.sqlite*
+data/
+backend/data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+htmlcov/
+.coverage
+coverage/
+.nyc_output/
+
+# Uploads
+uploads/

@@ -1,0 +1,13 @@
+{
+  "name": "DistilBERT (Ayush Vishwakarma's model)",
+  "accuracy": 0.927,
+  "f1_macro": 0.8825,
+  "f1_weighted": 0.9269,
+  "precision_macro": 0.888,
+  "recall_macro": 0.879,
+  "inference_latency_ms": 82.74,
+  "model_size": "67M params (~268MB)",
+  "training_time": "Fine-tuned",
+  "status": "active",
+  "is_current": true
+}

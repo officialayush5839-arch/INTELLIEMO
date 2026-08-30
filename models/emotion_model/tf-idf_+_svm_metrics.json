@@ -1,0 +1,12 @@
+{
+  "name": "TF-IDF + SVM",
+  "accuracy": 0.88,
+  "f1_macro": 0.8211,
+  "f1_weighted": 0.8781,
+  "precision_macro": 0.8442,
+  "recall_macro": 0.8028,
+  "inference_latency_ms": 0.0,
+  "model_size": "Small (~4MB)",
+  "training_time": "2.1s",
+  "status": "trained"
+}
