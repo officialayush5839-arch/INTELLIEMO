@@ -14,37 +14,51 @@ echo   benchmarks the high-accuracy DistilBERT emotion model.
 echo  ============================================================
 echo.
 
-:: Check Python
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo [ERROR] Python is not installed or not in PATH.
-    pause
-    exit /b 1
+REM Check Python or virtualenv
+set "PY_CMD=python"
+if exist "backend\.venv\Scripts\python.exe" (
+    set "PY_CMD=%~dp0backend\.venv\Scripts\python.exe"
+) else (
+    %PY_CMD% --version >nul 2>&1
+    if errorlevel 1 (
+        py -3 --version >nul 2>&1
+        if not errorlevel 1 (
+            set "PY_CMD=py -3"
+        ) else (
+            echo [ERROR] Python is not installed or not in PATH.
+            pause
+            exit /b 1
+        )
+    )
 )
 
 echo [1/3] Checking hardware acceleration...
-python -c "import torch; print(f'  CUDA GPU: {torch.cuda.is_available()} | Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
+"%PY_CMD%" -c "import torch; print(f'  CUDA GPU: {torch.cuda.is_available()} | Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
 echo.
 
 echo [2/3] Checking training dependencies...
-python -c "import datasets, sklearn, transformers, torch" >nul 2>&1
+"%PY_CMD%" -c "import datasets, sklearn, transformers, torch" >nul 2>&1
 if errorlevel 1 (
     echo [INFO] Installing required dependencies...
-    pip install datasets scikit-learn transformers torch --quiet --disable-pip-version-check
+    if exist "backend\.venv\Scripts\pip.exe" (
+        "%~dp0backend\.venv\Scripts\pip.exe" install datasets scikit-learn transformers torch --disable-pip-version-check
+    ) else (
+        pip install datasets scikit-learn transformers torch --disable-pip-version-check
+    )
 )
 echo [OK] Dependencies ready.
 echo.
 
 echo [3/3] Starting model training and benchmarking...
 echo.
-python -m ml.training.train
+"%PY_CMD%" -m ml.training.train
 
 echo.
 echo  ============================================================
 echo   Training and evaluation complete!
 echo   Metrics saved to: models/emotion_model/
-echo   View the updated metrics and comparison charts at:
-echo   http://localhost:7036/model
+echo   View updated metrics and comparison charts at:
+echo   http://localhost:7036/dashboard/model
 echo  ============================================================
 echo.
 
