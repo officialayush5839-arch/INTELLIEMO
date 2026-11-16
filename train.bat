@@ -14,18 +14,21 @@ echo   benchmarks the high-accuracy DistilBERT emotion model.
 echo  ============================================================
 echo.
 
-REM Check Python or virtualenv
-set "PY_CMD=python"
-if exist "backend\.venv\Scripts\python.exe" (
+:: Identify Python executable
+set "PY_CMD="
+
+if exist "%~dp0backend\.venv\Scripts\python.exe" (
     set "PY_CMD=%~dp0backend\.venv\Scripts\python.exe"
 ) else (
-    %PY_CMD% --version >nul 2>&1
-    if errorlevel 1 (
-        py -3 --version >nul 2>&1
+    py -3 -c "import sys" >nul 2>&1
+    if not errorlevel 1 (
+        set "PY_CMD=py -3"
+    ) else (
+        python -c "import sys" >nul 2>&1
         if not errorlevel 1 (
-            set "PY_CMD=py -3"
+            set "PY_CMD=python"
         ) else (
-            echo [ERROR] Python is not installed or not in PATH.
+            echo [ERROR] A valid Python interpreter was not detected in PATH.
             pause
             exit /b 1
         )
@@ -40,11 +43,7 @@ echo [2/3] Checking training dependencies...
 "%PY_CMD%" -c "import datasets, sklearn, transformers, torch" >nul 2>&1
 if errorlevel 1 (
     echo [INFO] Installing required dependencies...
-    if exist "backend\.venv\Scripts\pip.exe" (
-        "%~dp0backend\.venv\Scripts\pip.exe" install datasets scikit-learn transformers torch --disable-pip-version-check
-    ) else (
-        pip install datasets scikit-learn transformers torch --disable-pip-version-check
-    )
+    "%PY_CMD%" -m pip install datasets scikit-learn transformers torch --disable-pip-version-check
 )
 echo [OK] Dependencies ready.
 echo.

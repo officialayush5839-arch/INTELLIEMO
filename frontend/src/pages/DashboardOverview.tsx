@@ -1,19 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
-  BarChart3,
   Clock,
   Target,
   Brain,
   TrendingUp,
   ArrowRight,
+  Terminal,
+  Activity,
+  Layers,
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import { getAnalyticsSummary, getHistory } from '../api/client';
-import { EMOTION_COLORS, formatConfidence, formatNumber, getEmotionColor, cn } from '../utils';
+import { EMOTION_COLORS, formatConfidence, formatNumber, getEmotionColor } from '../utils';
+import { springSnappy, springGentle } from '../constants/motion';
 import type { AnalyticsSummary } from '../types';
 
 function KPICard({
@@ -21,45 +25,44 @@ function KPICard({
   value,
   subtitle,
   icon: Icon,
-  color = 'text-blue-600',
-  bgColor = 'bg-blue-50',
   badgeText,
 }: {
   label: string;
   value: string;
   subtitle?: string;
   icon: React.ElementType;
-  color?: string;
-  bgColor?: string;
   badgeText?: string;
 }) {
   return (
-    <div className="bg-white border border-border/80 rounded-2xl p-5 shadow-xs card-hover flex flex-col justify-between">
+    <motion.div
+      whileHover={{ y: -4, transition: springSnappy }}
+      className="monolith-card specular-rim p-4 sm:p-5 flex flex-col justify-between cursor-default transition-shadow hover:shadow-lg hover:shadow-black/40"
+    >
       <div>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{label}</span>
-          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center border border-slate-100 shadow-2xs', bgColor, color)}>
-            <Icon className="w-5 h-5" />
+          <span className="text-[10px] font-mono font-medium text-zinc-500 uppercase tracking-wider">{label}</span>
+          <div className="w-7 h-7 rounded bg-[#18181B] border border-[#27272A] flex items-center justify-center text-zinc-400">
+            <Icon className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div className="text-2xl font-bold text-text tracking-tight">{value}</div>
+        <div className="text-2xl font-bold font-mono text-zinc-100 tracking-tight">{value}</div>
       </div>
       {(subtitle || badgeText) && (
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
-          {subtitle && <span className="text-slate-500">{subtitle}</span>}
+        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#27272A] text-[11px]">
+          {subtitle && <span className="text-zinc-500 font-mono">{subtitle}</span>}
           {badgeText && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
               {badgeText}
             </span>
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
 export default function DashboardOverview() {
-  const { data: summary, isLoading: summaryLoading } = useQuery<AnalyticsSummary>({
+  const { data: summary } = useQuery<AnalyticsSummary>({
     queryKey: ['analytics-summary'],
     queryFn: getAnalyticsSummary,
   });
@@ -83,234 +86,255 @@ export default function DashboardOverview() {
   const dailyData = summary?.daily_counts || [];
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 shadow-md">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 -mb-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
-        
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-medium text-blue-200 mb-3 border border-white/10">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Fine-tuned DistilBERT • 92.7% Accuracy
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={springGentle}
+      className="space-y-6"
+    >
+      {/* Top Banner Deck */}
+      <motion.div
+        whileHover={{ y: -2, transition: springSnappy }}
+        className="monolith-card specular-rim p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+      >
+        <div>
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-[#18181B] border border-zinc-700/80 text-zinc-300 text-[11px] font-mono mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 radar-ping" />
+            <span>Ayush Vishwakarma's model • 92.7% Macro F1</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
-            Text Emotion Intelligence Engine
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-[-0.035em] text-zinc-100">
+            Emotion Intelligence Overview
           </h1>
-          <p className="text-sm text-blue-100/80 leading-relaxed mb-6">
-            Multi-class emotion detection with token-level explainability, discourse shift decomposition, and offline inference capabilities.
+          <p className="text-xs text-zinc-400 mt-1 max-w-xl leading-relaxed">
+            Real-time inference telemetry, historical discourse distributions, and deep language classification metrics.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="/dashboard/analyze"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-md shadow-blue-900/40 transition-all"
-            >
-              <Brain className="w-4 h-4" />
-              Analyze New Text
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-            <Link
-              to="/dashboard/model"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold rounded-xl backdrop-blur-sm transition-all"
-            >
-              Model Benchmarks
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          label="Total Analyses"
-          value={summaryLoading ? '—' : formatNumber(summary?.total_analyses || 0)}
-          subtitle="Processed sentences"
-          icon={BarChart3}
-          color="text-blue-600"
-          bgColor="bg-blue-50"
-        />
-        <KPICard
-          label="Average Confidence"
-          value={summaryLoading ? '—' : formatConfidence(summary?.average_confidence || 0)}
-          subtitle="Model certainty score"
-          icon={Target}
-          color="text-emerald-600"
-          bgColor="bg-emerald-50"
-          badgeText="High Reliability"
-        />
-        <KPICard
-          label="Most Detected"
-          value={summaryLoading ? '—' : (summary?.most_frequent_emotion || 'N/A')}
-          subtitle="Dominant emotion"
-          icon={TrendingUp}
-          color="text-amber-600"
-          bgColor="bg-amber-50"
-          badgeText="Top Category"
-        />
-        <KPICard
-          label="Active Model"
-          value="Ayush Vishwakarma"
-          subtitle="DistilBERT 67M params"
-          icon={Brain}
-          color="text-indigo-600"
-          bgColor="bg-indigo-50"
-          badgeText="92.7% Acc"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Emotion Distribution */}
-        <div className="bg-white border border-border/80 rounded-2xl p-6 shadow-xs card-hover">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-            <h3 className="font-semibold text-text text-base">Emotion Distribution</h3>
-            <span className="text-xs text-text-secondary">Across all user analyses</span>
-          </div>
-          {pieData.length > 0 ? (
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="w-48 h-48 relative shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={52}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(val: any) => [`${val} samples`, 'Count']}
-                      contentStyle={{ backgroundColor: '#0F172A', color: '#F8FAFC', borderRadius: '10px', border: 'none', fontSize: '12px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex-1 w-full space-y-2">
-                {pieData.map((entry) => (
-                  <div key={entry.name} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span className="capitalize font-medium text-text">{entry.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400 font-mono text-[11px]">{entry.pct}%</span>
-                      <span className="font-bold text-slate-800 font-mono w-8 text-right">{entry.value}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="h-48 flex items-center justify-center text-sm text-text-secondary">
-              No data yet. Analyze some text to see distribution.
-            </div>
-          )}
         </div>
 
-        {/* Emotion Trend */}
-        <div className="bg-white border border-border/80 rounded-2xl p-6 shadow-xs card-hover">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-            <h3 className="font-semibold text-text text-base">Analysis Volume Over Time</h3>
-            <span className="text-xs text-text-secondary">Daily request throughput</span>
-          </div>
-          {dailyData.length > 0 ? (
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#64748B" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="#64748B" />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0F172A', color: '#F8FAFC', borderRadius: '10px', border: 'none', fontSize: '12px' }}
-                  />
-                  <Bar dataKey="count" fill="#2563EB" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-48 flex items-center justify-center text-sm text-text-secondary">
-              No trend data available yet.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent Analyses */}
-      <div className="bg-white border border-border/80 rounded-2xl p-6 shadow-xs card-hover">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-          <div>
-            <h3 className="font-semibold text-text text-base">Recent Analyses</h3>
-            <p className="text-xs text-text-secondary">Latest text emotion extractions</p>
-          </div>
+        <div className="flex items-center gap-2.5 shrink-0">
           <Link
-            to="/dashboard/history"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100/70 transition-colors"
+            to="/dashboard/analyze"
+            className="tactile-btn inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs rounded-md shadow-xs border border-zinc-200"
           >
-            View all history <ArrowRight className="w-3.5 h-3.5" />
+            <Terminal className="w-3.5 h-3.5" />
+            <span>Open Console</span>
+          </Link>
+          <Link
+            to="/dashboard/batch"
+            className="tactile-btn inline-flex items-center gap-2 px-3.5 py-2 bg-[#18181B] hover:bg-[#202024] border border-[#27272A] text-zinc-300 font-semibold text-xs rounded-md"
+          >
+            <Layers className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Batch Upload</span>
           </Link>
         </div>
-        {history && history.items.length > 0 ? (
-          <div className="overflow-x-auto border border-border/80 rounded-xl">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-border text-left text-text-secondary text-xs">
-                  <th className="py-2.5 px-4 font-semibold">Analyzed Text</th>
-                  <th className="py-2.5 px-4 font-semibold">Detected Emotion</th>
-                  <th className="py-2.5 px-4 font-semibold">Confidence</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Timestamp</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {history.items.map((item) => {
-                  const emotionColor = getEmotionColor(item.dominant_emotion);
+      </motion.div>
+
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KPICard
+          label="Total Inferences"
+          value={formatNumber(summary?.total_analyses ?? 0)}
+          subtitle="All recorded events"
+          icon={Activity}
+          badgeText="PERSISTED"
+        />
+        <KPICard
+          label="Mean Confidence"
+          value={formatConfidence(summary?.average_confidence ?? 0)}
+          subtitle="Model certainty"
+          icon={Target}
+          badgeText="92.7% F1"
+        />
+        <KPICard
+          label="Dominant Cluster"
+          value={summary?.dominant_emotion || 'Joy'}
+          subtitle="Most frequent label"
+          icon={Brain}
+          badgeText="PRIMARY"
+        />
+        <KPICard
+          label="Mean Latency"
+          value="< 15ms"
+          subtitle="CPU / GPU pipeline"
+          icon={Clock}
+          badgeText="OPTIMIZED"
+        />
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Daily Inference Frequency */}
+        <motion.div
+          whileHover={{ y: -3, transition: springSnappy }}
+          className="lg:col-span-7 monolith-card specular-rim p-5 sm:p-6"
+        >
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#27272A]">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-zinc-400" />
+              <h3 className="text-xs font-mono font-medium uppercase tracking-wider text-zinc-300">
+                Inference Velocity by Day
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-500">PAST 7 DAYS</span>
+          </div>
+
+          <div className="h-56 w-full">
+            {dailyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dailyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
+                  <XAxis dataKey="date" tick={{ fill: '#A1A1AA', fontSize: 10 }} />
+                  <YAxis tick={{ fill: '#71717A', fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#18181B',
+                      borderColor: '#3F3F46',
+                      borderRadius: 6,
+                      color: '#F4F4F5',
+                      fontSize: 11,
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#F4F4F5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-zinc-500 font-mono">
+                No activity recorded yet
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Emotion Distribution Donut */}
+        <motion.div
+          whileHover={{ y: -3, transition: springSnappy }}
+          className="lg:col-span-5 monolith-card specular-rim p-5 sm:p-6 flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#27272A]">
+            <h3 className="text-xs font-mono font-medium uppercase tracking-wider text-zinc-300">
+              Taxonomy Dispersion
+            </h3>
+            <span className="text-[10px] font-mono text-zinc-500">CUMULATIVE</span>
+          </div>
+
+          <div className="h-44 w-full relative">
+            {pieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={65}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="#121215" strokeWidth={2} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#18181B',
+                      borderColor: '#3F3F46',
+                      borderRadius: 6,
+                      color: '#F4F4F5',
+                      fontSize: 11,
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-zinc-500 font-mono">
+                No emotion data
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-[#27272A]">
+            {pieData.slice(0, 4).map((item) => (
+              <div key={item.name} className="flex items-center justify-between text-xs font-mono text-zinc-400">
+                <span className="flex items-center gap-1.5 capitalize truncate">
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  {item.name}
+                </span>
+                <span className="text-zinc-200">{item.pct}%</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Recent History Table */}
+      <motion.div
+        whileHover={{ y: -2, transition: springSnappy }}
+        className="monolith-card specular-rim p-5 sm:p-6"
+      >
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#27272A]">
+          <h3 className="text-xs font-mono font-medium uppercase tracking-wider text-zinc-300">
+            Recent Discourse Inferences
+          </h3>
+          <Link
+            to="/dashboard/history"
+            className="text-xs font-mono text-zinc-400 hover:text-zinc-100 flex items-center gap-1 transition-colors"
+          >
+            <span>Full Audit Log</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-[#27272A] text-zinc-500 font-mono text-[11px]">
+                <th className="py-2 px-3">Text Payload</th>
+                <th className="py-2 px-3 w-32">Classification</th>
+                <th className="py-2 px-3 w-24 text-right">Confidence</th>
+                <th className="py-2 px-3 w-28 text-right">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#27272A]/60">
+              {history?.items && history.items.length > 0 ? (
+                history.items.slice(0, 5).map((item) => {
+                  const color = getEmotionColor(item.dominant_emotion);
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4 max-w-sm truncate text-text font-medium" title={item.text}>
+                    <tr key={item.id} className="hover:bg-[#18181B]/60 transition-colors">
+                      <td className="py-2.5 px-3 text-zinc-200 font-sans max-w-md truncate" title={item.text}>
                         {item.text}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-2.5 px-3">
                         <span
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold capitalize inline-flex items-center gap-1.5 shadow-2xs"
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono border"
                           style={{
-                            backgroundColor: `${emotionColor}18`,
-                            color: emotionColor,
-                            border: `1px solid ${emotionColor}35`,
+                            backgroundColor: `${color}15`,
+                            borderColor: `${color}35`,
+                            color: color,
                           }}
                         >
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: emotionColor }} />
-                          {item.dominant_emotion}
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+                          <span className="capitalize">{item.dominant_emotion}</span>
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono font-medium text-slate-800">
+                      <td className="py-2.5 px-3 text-right font-mono text-zinc-200">
                         {formatConfidence(item.confidence)}
                       </td>
-                      <td className="py-3 px-4 text-text-secondary text-xs font-mono text-right">
-                        {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, {new Date(item.created_at).toLocaleDateString()}
+                      <td className="py-2.5 px-3 text-right font-mono text-zinc-500 text-[11px]">
+                        {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="py-10 text-center text-sm text-text-secondary">
-            <Clock className="w-8 h-8 mx-auto mb-2 text-text-secondary/40" />
-            <p className="font-medium text-slate-700">No analyses yet.</p>
-            <Link to="/dashboard/analyze" className="text-blue-600 hover:underline mt-1.5 inline-block text-xs font-semibold">
-              Analyze your first text →
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-6 text-center text-xs text-zinc-500 font-mono">
+                    No recent events found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -114,7 +114,7 @@ def create_app() -> FastAPI:
             content={"error": {"code": "INTERNAL_ERROR", "message": "An internal error occurred."}},
         )
 
-    # ── Register routes ──
+    # ── Register API routes ──
     from app.api.routes import health, emotion, batch, history, analytics, model
 
     api_prefix = "/api/v1"
@@ -125,16 +125,40 @@ def create_app() -> FastAPI:
     app.include_router(analytics.router, prefix=api_prefix, tags=["Analytics"])
     app.include_router(model.router, prefix=api_prefix, tags=["Model"])
 
-    # ── Root endpoint ──
-    @app.get("/", tags=["Root"])
-    async def root():
-        return {
-            "name": "INTELLIEMO",
-            "version": settings.APP_VERSION,
-            "description": "An Intelligent Emotion Detection System from Text Using NLP and Deep Learning",
-            "docs": "/docs",
-            "api": "/api/v1",
-        }
+    # ── Static / SPA Integration (Unified Deployments) ──
+    dist_dir = PROJECT_ROOT / "frontend" / "dist"
+    if dist_dir.exists() and (dist_dir / "index.html").exists():
+        from fastapi.staticfiles import StaticFiles
+        from fastapi.responses import FileResponse
+
+        assets_dir = dist_dir / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @app.get("/{full_path:path}")
+        async def serve_spa(full_path: str):
+            if (
+                full_path.startswith("api/")
+                or full_path.startswith("docs")
+                or full_path.startswith("redoc")
+                or full_path.startswith("openapi.json")
+            ):
+                return JSONResponse(status_code=404, content={"detail": "Not Found"})
+            file_path = dist_dir / full_path
+            if file_path.is_file():
+                return FileResponse(file_path)
+            return FileResponse(dist_dir / "index.html")
+    else:
+        # Fallback root API endpoint when frontend is deployed separately
+        @app.get("/", tags=["Root"])
+        async def root():
+            return {
+                "name": "INTELLIEMO",
+                "version": settings.APP_VERSION,
+                "description": "An Intelligent Emotion Detection System from Text Using NLP and Deep Learning",
+                "docs": "/docs",
+                "api": "/api/v1",
+            }
 
     return app
 

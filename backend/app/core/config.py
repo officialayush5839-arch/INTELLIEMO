@@ -29,15 +29,18 @@ class Settings(BaseSettings):
 
     # Server
     BACKEND_HOST: str = "0.0.0.0"
-    BACKEND_PORT: int = 236
-    CORS_ORIGINS: str = "http://localhost:7036,http://localhost:5173,http://localhost:3000,http://localhost:236"
+    BACKEND_PORT: int = int(os.environ.get("PORT", 236))
+    CORS_ORIGINS: str = "http://localhost:7036,http://localhost:5173,http://localhost:3000,http://localhost:236,*"
 
     # Logging
     LOG_LEVEL: str = "INFO"
 
     @property
     def cors_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.CORS_ORIGINS.split(",")]
+        origins = [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        if "*" in origins or not origins:
+            return ["*"]
+        return origins
 
     class Config:
         env_file = (str(PROJECT_ROOT / ".env"), str(BASE_DIR / ".env"))

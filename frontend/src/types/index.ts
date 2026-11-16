@@ -10,6 +10,8 @@ export interface Explanation {
   method: string;
   tokens: ExplanationToken[];
   note: string;
+  target_emotion?: string;
+  baseline_confidence?: number;
 }
 
 export interface ModelInfo {

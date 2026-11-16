@@ -29,8 +29,11 @@ def test_root():
     """Test root endpoint."""
     response = client.get("/")
     assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "INTELLIEMO"
+    if "application/json" in response.headers.get("content-type", ""):
+        data = response.json()
+        assert data["name"] == "INTELLIEMO"
+    else:
+        assert "<!doctype html" in response.text.lower() or "<html" in response.text.lower()
 
 
 def test_model_info():
@@ -71,7 +74,7 @@ def test_history():
 
 def test_emotions_list():
     """Test emotions list endpoint."""
-    response = client.get("/api/v1/emotion/emotions")
+    response = client.get("/api/v1/emotions")
     assert response.status_code == 200
     data = response.json()
     assert "emotions" in data

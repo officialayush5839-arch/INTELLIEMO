@@ -24,11 +24,11 @@ def decompose_and_analyze_emotions(text: str, features: dict) -> dict:
     global_probs = global_prediction.get("probabilities", {})
 
     contrastive_pattern = (
-        r'\b(?:but|however|although|yet|though|except|after\s+(?:some\s+time|that|a\s+while)|later\s+on|later|meanwhile|while)\b'
+        r'\b(?:but|however|although|though|even\s+though|despite|in\s+spite\s+of|on\s+the\s+other\s+hand|yet|except|nonetheless|nevertheless|after\s+(?:some\s+time|that|a\s+while)|later\s+on|later|meanwhile|while)\b'
     )
     has_contrast = bool(re.search(contrastive_pattern, text, flags=re.IGNORECASE))
     clauses = [c.strip() for c in re.split(contrastive_pattern, text, flags=re.IGNORECASE) if c.strip()]
-    has_coordinating = bool(re.search(r'\b(?:and|as well as|plus|along with)\b', text, flags=re.IGNORECASE))
+    has_coordinating = bool(re.search(r'\b(?:and|as well as|plus|along with|also)\b', text, flags=re.IGNORECASE))
 
     # Fast path: single clause without conjunctions
     if len(clauses) <= 1 and not has_coordinating:

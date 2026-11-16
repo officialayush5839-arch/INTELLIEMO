@@ -12,8 +12,12 @@ import type {
   HealthResponse,
 } from '../types';
 
+let rawBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+if (rawBaseUrl && !rawBaseUrl.startsWith('http://') && !rawBaseUrl.startsWith('https://')) {
+  rawBaseUrl = `https://${rawBaseUrl}`;
+}
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: rawBaseUrl ? (rawBaseUrl.endsWith('/api/v1') ? rawBaseUrl : `${rawBaseUrl}/api/v1`) : '/api/v1',
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
