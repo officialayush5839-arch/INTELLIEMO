@@ -121,7 +121,7 @@ def main():
     code, batch_data = http_post_multipart_csv(f"{BASE_URL}/analyze/batch", csv_sample, "test_cases.csv")
     check("Batch Upload 200", code == 200)
     check("Batch Processed Count", batch_data.get("total_records") == 3, f"Total: {batch_data.get('total_records')}")
-    check("Batch Successful Count", batch_data.get("successful_records") == 3, f"Success: {batch_data.get('successful_records')}")
+    check("Batch Successful Count", (batch_data.get("successful") or batch_data.get("successful_records")) == 3, f"Success: {batch_data.get('successful')}")
 
     # 7. Model Info Endpoint
     code, model_data = http_get(f"{BASE_URL}/model")
