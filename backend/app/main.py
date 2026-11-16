@@ -7,6 +7,8 @@ Using Natural Language Processing and Deep Learning.
 import logging
 import os
 import sys
+import time
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -28,6 +30,28 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
+def _warmup_model():
+    """Warm up the ML model in background so server binds immediately and passes health checks."""
+    try:
+        time.sleep(1)
+        logger.info("Background loading emotion detection model...")
+        model_path = settings.MODEL_PATH
+        if os.path.exists(model_path):
+            success = model_manager.load_from_local(model_path)
+            if success:
+                logger.info("Loaded model from local path: %s", model_path)
+        if not model_manager.loaded:
+            success = model_manager.load_from_pretrained(
+                "bhadresh-savani/distilbert-base-uncased-emotion"
+            )
+            if success:
+                logger.info("Loaded pretrained emotion model from HuggingFace")
+            else:
+                logger.warning("Could not load any model. Fallback on-demand load will be used.")
+    except Exception as e:
+        logger.error("Background model loading encountered error: %s", e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events."""
@@ -39,30 +63,9 @@ async def lifespan(app: FastAPI):
     init_db()
     logger.info("Database initialized")
 
-    # Load ML model
-    logger.info("Loading emotion detection model...")
-    model_path = settings.MODEL_PATH
-    if os.path.exists(model_path):
-        success = model_manager.load_from_local(model_path)
-        if success:
-            logger.info("Loaded model from local path: %s", model_path)
-        else:
-            logger.warning("Failed to load local model, trying pretrained...")
-    else:
-        logger.info("No local model found, loading pretrained from HuggingFace...")
-
-    if not model_manager.loaded:
-        success = model_manager.load_from_pretrained(
-            "bhadresh-savani/distilbert-base-uncased-emotion"
-        )
-        if success:
-            logger.info("Loaded pretrained emotion model from HuggingFace")
-        else:
-            logger.warning(
-                "Could not load any model. API will return 503 for analysis requests."
-            )
-
-    logger.info("Model status: %s", "loaded" if model_manager.loaded else "not loaded")
+    # Start background model loading
+    warmup_thread = threading.Thread(target=_warmup_model, daemon=True)
+    warmup_thread.start()
 
     yield
 

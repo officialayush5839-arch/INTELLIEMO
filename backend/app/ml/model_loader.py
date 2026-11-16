@@ -145,6 +145,10 @@ class ModelManager:
         Returns dict with 'probabilities', 'dominant_emotion', 'confidence'.
         """
         if not self.loaded:
+            logger.info("Model not yet loaded, loading on-demand...")
+            self.load_from_pretrained()
+
+        if not self.loaded:
             return {
                 "probabilities": {},
                 "dominant_emotion": "neutral",
