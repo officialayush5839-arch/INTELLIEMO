@@ -1,4 +1,4 @@
-"""Batch analysis API endpoint."""
+"""Batch analysis API endpoints."""
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -16,7 +16,7 @@ router = APIRouter()
     "/analyze/batch",
     summary="Batch analyze text from CSV upload",
 )
-async def batch_analyze(
+def batch_analyze(
     file: UploadFile = File(..., description="CSV file with 'text' column"),
     db: Session = Depends(get_db),
 ):
@@ -45,7 +45,7 @@ async def batch_analyze(
         )
 
     try:
-        content = await file.read()
+        content = file.file.read()
 
         # Check file size (max 5MB)
         if len(content) > 5 * 1024 * 1024:

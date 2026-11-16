@@ -28,7 +28,7 @@ router = APIRouter()
         503: {"model": ErrorResponse, "description": "Model not available"},
     },
 )
-async def analyze_text(
+def analyze_text(
     request: AnalyzeTextRequest,
     db: Session = Depends(get_db),
 ):
@@ -96,7 +96,7 @@ async def analyze_text(
 
 
 @router.get("/emotions", summary="Get supported emotions")
-async def get_emotions():
+def get_emotions():
     """Get list of supported emotion categories."""
     emotions = emotion_service.get_supported_emotions()
     return {"emotions": emotions}

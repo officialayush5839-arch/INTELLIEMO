@@ -10,8 +10,10 @@ from fastapi.testclient import TestClient
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from app.db.database import init_db
 from app.main import create_app
 
+init_db()
 app = create_app()
 client = TestClient(app)
 

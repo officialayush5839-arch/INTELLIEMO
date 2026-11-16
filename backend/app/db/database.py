@@ -9,6 +9,12 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
+if "sqlite" in settings.DATABASE_URL:
+    match = re.search(r"sqlite:///(.+)", settings.DATABASE_URL)
+    if match:
+        db_path = Path(match.group(1))
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+
 engine = create_engine(
     settings.DATABASE_URL,
     connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {},

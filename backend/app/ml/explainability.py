@@ -49,20 +49,38 @@ def explain_prediction(text: str, target_emotion: Optional[str] = None) -> dict:
         tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
         pad_token_id = tokenizer.pad_token_id or 0
 
+        valid_indices = [
+            i for i, token in enumerate(tokens)
+            if token not in ["[CLS]", "[SEP]", "[PAD]"]
+        ]
+
+        if not valid_indices:
+            return {
+                "method": "token_drop_attribution",
+                "tokens": [],
+                "target_emotion": model_manager.labels[target_idx] if target_idx < len(model_manager.labels) else "unknown",
+                "baseline_confidence": round(baseline_score, 4),
+                "note": "No valid tokens to attribute.",
+            }
+
+        # Vectorized batch attribution in a single forward pass (capped at 16 tokens to stay fast & low memory)
+        valid_indices = valid_indices[:16]
+        batch_size = len(valid_indices)
+
+        batch_input_ids = input_ids.repeat(batch_size, 1)
+        batch_attention_mask = attention_mask.repeat(batch_size, 1)
+
+        for row_idx, token_idx in enumerate(valid_indices):
+            batch_input_ids[row_idx, token_idx] = pad_token_id
+
+        with torch.no_grad():
+            masked_outputs = model(input_ids=batch_input_ids, attention_mask=batch_attention_mask)
+            masked_probs = torch.softmax(masked_outputs.logits, dim=-1)
+
         token_scores = []
-        for i, token in enumerate(tokens):
-            if token in ["[CLS]", "[SEP]", "[PAD]"]:
-                continue
-
-            # Replace token with pad token
-            masked_ids = input_ids.clone()
-            masked_ids[0, i] = pad_token_id
-
-            with torch.no_grad():
-                masked_outputs = model(input_ids=masked_ids, attention_mask=attention_mask)
-                masked_probs = torch.softmax(masked_outputs.logits, dim=-1)[0]
-
-            masked_score = masked_probs[target_idx].item()
+        for row_idx, token_idx in enumerate(valid_indices):
+            token = tokens[token_idx]
+            masked_score = masked_probs[row_idx, target_idx].item()
             contribution = baseline_score - masked_score
 
             token_scores.append({
