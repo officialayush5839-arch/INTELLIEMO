@@ -7,7 +7,6 @@ Using Natural Language Processing and Deep Learning.
 import logging
 import os
 import sys
-import time
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -33,7 +32,6 @@ logger = logging.getLogger(__name__)
 def _warmup_model():
     """Warm up the ML model in background so server binds immediately and passes health checks."""
     try:
-        time.sleep(1)
         logger.info("Background loading emotion detection model...")
         model_path = settings.MODEL_PATH
         if os.path.exists(model_path):
