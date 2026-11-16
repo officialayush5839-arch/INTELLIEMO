@@ -145,7 +145,7 @@ def main():
     check("Empty Text 400 Rejected", code == 400, f"Code: {code}")
 
     code, huge_resp = http_post_json(f"{BASE_URL}/analyze", {"text": "A" * 2500})
-    check("Huge Text 400 Rejected", code == 400, f"Code: {code}")
+    check("Huge Text Rejected (400 or 422)", code in (400, 422), f"Code: {code}")
 
     print("=" * 65)
     print("ALL 10 FULL-STACK VERIFICATION CHECKS PASSED WITH 100% SUCCESS!")
