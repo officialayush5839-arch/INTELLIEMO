@@ -17,6 +17,10 @@
 [![Accuracy](https://img.shields.io/badge/Model_Accuracy-92.7%25-059669?style=for-the-badge&logo=target&logoColor=white)](#-model-benchmarks--evaluation)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#-license)
 
+<br/>
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/officialayush5839-arch/INTELLIEMO)
+
 </div>
 
 ---
