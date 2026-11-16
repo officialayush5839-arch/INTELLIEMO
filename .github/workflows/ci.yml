@@ -29,9 +29,8 @@ jobs:
 
       - name: Run verification test suite
         run: |
-          python -m uvicorn app.main:app --host 127.0.0.1 --port 236 &
-          sleep 6
-          python verify_system.py
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          TEST_PORT=8000 python verify_system.py
 
   frontend-build:
     name: Frontend Build & Typecheck

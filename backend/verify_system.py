@@ -4,8 +4,11 @@ import urllib.error
 import json
 import sys
 import io
+import os
+import time
 
-BASE_URL = "http://127.0.0.1:236/api/v1"
+TEST_PORT = int(os.environ.get("TEST_PORT", os.environ.get("PORT", 8000)))
+BASE_URL = f"http://127.0.0.1:{TEST_PORT}/api/v1"
 
 def check(name, success, info=""):
     status = "PASS" if success else "FAIL"
@@ -56,7 +59,24 @@ def http_post_multipart_csv(url, csv_text, filename="test.csv"):
 def main():
     print("=" * 65)
     print("INTELLIEMO FULL-STACK COMPREHENSIVE VERIFICATION")
+    print(f"Targeting Base URL: {BASE_URL}")
     print("=" * 65)
+
+    # Wait for server readiness
+    print("Waiting for server to become ready...")
+    ready = False
+    for attempt in range(25):
+        try:
+            code, data = http_get(f"{BASE_URL}/health")
+            if code == 200:
+                ready = True
+                print(f"Server is ready after {attempt * 2}s.")
+                break
+        except Exception:
+            time.sleep(2)
+
+    if not ready:
+        raise RuntimeError(f"Server at {BASE_URL}/health did not become ready within 50 seconds.")
 
     # 1. Health
     code, data = http_get(f"{BASE_URL}/health")
