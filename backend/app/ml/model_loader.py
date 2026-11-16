@@ -1,6 +1,7 @@
 """Model loading and management for inference."""
 
 import os
+import gc
 import time
 import json
 import logging
@@ -61,8 +62,13 @@ class ModelManager:
 
             logger.info(f"Loading model: {model_name} on {self.device}")
 
+            torch.set_grad_enabled(False)
+            try:
+                torch.set_num_threads(1)
+            except Exception:
+                pass
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+            self.model = AutoModelForSequenceClassification.from_pretrained(model_name, low_cpu_mem_usage=True)
             self.model.to(self.device)
             self.model.eval()
 
@@ -87,18 +93,7 @@ class ModelManager:
                 f"Model loaded in {self.load_time:.2f}s. "
                 f"Labels: {len(self.labels)}, Device: {self.device}"
             )
-            # Auto-cache model weights locally if not already present
-            try:
-                from app.core.config import get_settings
-                save_dir = get_settings().MODEL_PATH
-                if not os.path.exists(os.path.join(save_dir, "config.json")):
-                    os.makedirs(save_dir, exist_ok=True)
-                    self.tokenizer.save_pretrained(save_dir)
-                    self.model.save_pretrained(save_dir)
-                    logger.info(f"Cached model locally to {save_dir}")
-            except Exception:
-                pass
-
+            gc.collect()
             return True
 
         except Exception as e:
@@ -108,7 +103,8 @@ class ModelManager:
 
     def load_from_local(self, path: str) -> bool:
         """Load model from a local directory."""
-        if not os.path.exists(path) or not os.path.exists(os.path.join(path, "config.json")):
+        has_weights = os.path.exists(os.path.join(path, 'model.safetensors')) or os.path.exists(os.path.join(path, 'pytorch_model.bin'))
+        if not os.path.exists(path) or not os.path.exists(os.path.join(path, 'config.json')) or not has_weights:
             logger.info(f"Local model weights (config.json) not found in: {path}")
             return False
 
