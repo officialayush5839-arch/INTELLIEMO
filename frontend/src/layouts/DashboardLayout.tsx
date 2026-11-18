@@ -45,7 +45,8 @@ export default function DashboardLayout() {
     retry: 1,
   });
 
-  const isOnline = health?.status === 'healthy';
+  const isOnline = health?.status === 'healthy' && (health?.model_loaded || health?.model_ready);
+  const isWarmingUp = health?.status === 'healthy' && !isOnline;
 
   // Keyboard navigation shortcuts: Ctrl+1 through Ctrl+7 (or Cmd+1 through Cmd+7)
   useEffect(() => {
@@ -154,16 +155,22 @@ export default function DashboardLayout() {
                 'flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border',
                 isOnline
                   ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/80'
-                  : 'bg-amber-950/60 text-amber-400 border-amber-800/80'
+                  : isWarmingUp
+                  ? 'bg-amber-950/60 text-amber-400 border-amber-800/80'
+                  : 'bg-rose-950/60 text-rose-400 border-rose-800/80'
               )}
             >
               <span
                 className={cn(
                   'w-1.5 h-1.5 rounded-full',
-                  isOnline ? 'bg-emerald-400 radar-ping' : 'bg-amber-400'
+                  isOnline
+                    ? 'bg-emerald-400 radar-ping'
+                    : isWarmingUp
+                    ? 'bg-amber-400 animate-pulse'
+                    : 'bg-rose-400'
                 )}
               />
-              {isOnline ? 'ONLINE' : 'WAITING'}
+              {isOnline ? 'ONLINE' : isWarmingUp ? 'WARMING UP' : 'OFFLINE'}
             </span>
           </div>
           <div className="text-xs font-semibold text-zinc-200 truncate" title="Ayush Vishwakarma's model">

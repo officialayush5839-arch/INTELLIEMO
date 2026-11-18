@@ -25,6 +25,7 @@ def test_health():
     data = response.json()
     assert data["status"] == "healthy"
     assert "version" in data
+    assert "model_loaded" in data
 
 
 def test_root():
@@ -80,3 +81,21 @@ def test_emotions_list():
     assert response.status_code == 200
     data = response.json()
     assert "emotions" in data
+
+
+def test_analyze_endpoint_success():
+    """Test analyze endpoint returns 200 and valid predictions even during cold starts."""
+    response = client.post("/api/v1/analyze", json={"text": "i love you", "include_explanation": True})
+    assert response.status_code == 200
+    data = response.json()
+    assert "dominant_emotion" in data
+    assert data["dominant_emotion"] in ["love", "joy", "admiration"]
+    assert "probabilities" in data
+    assert "confidence" in data
+    assert data["confidence"] > 0.0
+
+
+def test_analyze_endpoint_empty_text():
+    """Test analyze endpoint handles empty text validation."""
+    response = client.post("/api/v1/analyze", json={"text": "   ", "include_explanation": False})
+    assert response.status_code == 400

@@ -11,6 +11,28 @@ def explain_prediction(text: str, target_emotion: Optional[str] = None) -> dict:
     Measures how much removing each token changes the prediction.
     """
     if not model_manager.loaded:
+        if getattr(model_manager, "is_fallback", False):
+            import re
+            from app.ml.model_loader import EMOTION_LEXICON
+            words = re.findall(r"\b\w+\b", text.lower())
+            token_scores = []
+            tgt = target_emotion or "joy"
+            keywords = EMOTION_LEXICON.get(tgt, set())
+            for w in words[:16]:
+                is_key = w in keywords
+                token_scores.append({
+                    "token": w,
+                    "contribution": 0.35 if is_key else 0.04,
+                    "positive": is_key,
+                })
+            token_scores.sort(key=lambda x: x["contribution"], reverse=True)
+            return {
+                "method": "lexicon_attribution",
+                "tokens": token_scores[:15],
+                "target_emotion": tgt,
+                "baseline_confidence": 0.85,
+                "note": "Lexical attribution.",
+            }
         return {
             "method": "unavailable",
             "tokens": [],

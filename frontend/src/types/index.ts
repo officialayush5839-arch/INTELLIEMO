@@ -174,5 +174,7 @@ export interface HealthResponse {
   status: string;
   version: string;
   model_loaded: boolean;
+  model_ready?: boolean;
+  model_status?: string;
   database: string;
 }

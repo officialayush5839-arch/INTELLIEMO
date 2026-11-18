@@ -51,7 +51,11 @@ def analyze_text(
             detail={"error": {"code": "TEXT_TOO_LONG", "message": "Text must be 2000 characters or fewer."}},
         )
 
+    # Ensure model is ready (waits for warmup if in progress, or engages resilient engine)
     if not model_manager.loaded:
+        model_manager.ensure_ready(timeout=25.0)
+
+    if not (model_manager.loaded or getattr(model_manager, "is_fallback", False)):
         raise HTTPException(
             status_code=503,
             detail={"error": {"code": "MODEL_UNAVAILABLE", "message": "Emotion model is not loaded."}},

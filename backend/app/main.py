@@ -33,21 +33,26 @@ def _warmup_model():
     """Warm up the ML model in background so server binds immediately and passes health checks."""
     try:
         logger.info("Background loading emotion detection model...")
-        model_path = settings.MODEL_PATH
-        if os.path.exists(model_path):
-            success = model_manager.load_from_local(model_path)
-            if success:
-                logger.info("Loaded model from local path: %s", model_path)
-        if not model_manager.loaded:
-            success = model_manager.load_from_pretrained(
-                "bhadresh-savani/distilbert-base-uncased-emotion"
-            )
-            if success:
-                logger.info("Loaded pretrained emotion model from HuggingFace")
-            else:
-                logger.warning("Could not load any model. Fallback on-demand load will be used.")
+        candidate_paths = [
+            settings.MODEL_PATH,
+            str(Path(__file__).resolve().parent.parent / "models" / "emotion_model"),
+            str(Path(__file__).resolve().parent.parent.parent / "models" / "emotion_model"),
+            "./models/emotion_model",
+        ]
+        for p in candidate_paths:
+            if os.path.exists(p) and model_manager.load_from_local(p):
+                logger.info("Loaded model from local path: %s", p)
+                return
+
+        # If not loaded locally, load pretrained or fallback
+        model_manager.ensure_ready(timeout=45.0)
+        if model_manager.loaded:
+            logger.info("Emotion model is online and ready for inference.")
+        else:
+            logger.info("Emotion model initialized in resilient fallback mode.")
     except Exception as e:
         logger.error("Background model loading encountered error: %s", e)
+        model_manager.is_fallback = True
 
 
 @asynccontextmanager

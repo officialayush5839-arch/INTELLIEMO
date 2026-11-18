@@ -162,7 +162,7 @@ class EmotionService:
 
         # Step 4: Explanation
         explanation = None
-        if include_explanation and model_manager.loaded:
+        if include_explanation and (model_manager.loaded or getattr(model_manager, "is_fallback", False)):
             explanation_data = explain_prediction(normalized, dominant_emotion)
             explanation = explanation_data
 
